@@ -14,10 +14,10 @@ interface OldManBuckProps {
 
 // When you have AI-generated images, put them in public/mascot/ and they'll be used automatically
 const MASCOT_IMAGES: Record<BuckMood, string> = {
-  neutral: '/mascot/buck-neutral.png',
-  pleased: '/mascot/buck-pleased.png',
-  excited: '/mascot/buck-excited.png',
-  disgusted: '/mascot/buck-disgusted.png',
+  neutral: '/mascot/buck-neutral-transparent.png',
+  pleased: '/mascot/buck-pleased-transparent.png',
+  excited: '/mascot/buck-excited-transparent.png',
+  disgusted: '/mascot/buck-disgusted-transparent.png',
 };
 
 // Funny idle behaviors that fire randomly
@@ -179,7 +179,7 @@ export default function OldManBuck({ message, mood = 'neutral', size = 'small', 
     }
   }, [mood, isSpeaking]);
 
-  const charSize = isLarge ? 'w-24 h-24' : 'w-14 h-14';
+  const charSize = isLarge ? 'w-48 h-48' : 'w-28 h-28';
 
   return (
     <div className={`flex items-end gap-3 ${isLarge ? 'mb-3' : 'mb-2'}`}>
@@ -192,7 +192,7 @@ export default function OldManBuck({ message, mood = 'neutral', size = 'small', 
         >
           <motion.div animate={bodyControls}>
             {hasCustomImage ? (
-              // AI-generated image
+              // AI-generated image with transparent background
               <motion.img
                 key={mood}
                 src={MASCOT_IMAGES[mood]}
@@ -201,6 +201,7 @@ export default function OldManBuck({ message, mood = 'neutral', size = 'small', 
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300 }}
+                style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))' }}
               />
             ) : (
               // Fallback: Stylized character
