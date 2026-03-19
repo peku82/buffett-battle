@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OldManBuck from '@/components/mascot/OldManBuck';
 import TimerBar from '@/components/ui/TimerBar';
 import ScoreBoard from '@/components/ui/ScoreBoard';
+import ProgressIndicator from '@/components/ui/ProgressIndicator';
+import GameHeader from '@/components/ui/GameHeader';
+import StepGuide from '@/components/ui/StepGuide';
 import { useGame } from '@/lib/game-context';
 import Round1 from '@/components/rounds/Round1';
 import Round2 from '@/components/rounds/Round2';
@@ -21,6 +24,30 @@ const RoundComponents: Record<number, React.ComponentType> = {
   6: Round6,
 };
 
+const PHASE_STEPS = [
+  { label: 'Aprende', icon: '📖' },
+  { label: 'Analiza', icon: '🔍' },
+  { label: 'Decide', icon: '🤔' },
+  { label: 'Resultado', icon: '📊' },
+  { label: 'Puntos', icon: '⭐' },
+];
+
+const PHASE_INDEX: Record<string, number> = {
+  teach: 1,
+  analyze: 2,
+  decide: 3,
+  reveal: 4,
+  score: 5,
+};
+
+const PHASE_HINTS: Record<string, { message: string; icon: string }> = {
+  teach: { message: 'Buck te explica el concepto de esta ronda. ¡Pon atención!', icon: '📖' },
+  analyze: { message: 'Revisa la información de las empresas y prepara tu estrategia.', icon: '🔍' },
+  decide: { message: 'Es hora de decidir: ¿compras o pasas? El reloj corre.', icon: '⏱️' },
+  reveal: { message: 'Vamos a ver qué decidió cada jugador...', icon: '👀' },
+  score: { message: 'Calculando puntuaciones...', icon: '📊' },
+};
+
 export default function GameScreen() {
   const { state } = useGame();
   const round = state.currentRound;
@@ -30,16 +57,24 @@ export default function GameScreen() {
   const RoundComponent = RoundComponents[round.number] || Round1;
   const isTeachPhase = round.phase === 'teach';
   const isRevealPhase = round.phase === 'reveal';
+  const phaseHint = PHASE_HINTS[round.phase];
 
   return (
     <div className="min-h-dvh flex flex-col p-3 sm:p-4 max-w-xl mx-auto">
-      {/* Header: Round info + Score */}
+      {/* Back to home button */}
+      <div className="mb-2">
+        <GameHeader />
+      </div>
+
+      {/* Header: Round progress + Score */}
       <div className="space-y-2 mb-3">
+        {/* Round progress indicator */}
+        <ProgressIndicator />
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">{round.concept.icon}</span>
             <div>
-              <div className="text-xs text-gray-400 font-mono">RONDA {round.number}/6</div>
               <div className="text-sm font-bold text-amber-300">{round.concept.title}</div>
             </div>
           </div>
@@ -53,8 +88,29 @@ export default function GameScreen() {
             </motion.div>
           )}
         </div>
+
+        {/* Phase step guide */}
+        <StepGuide
+          currentStep={PHASE_INDEX[round.phase] || 1}
+          totalSteps={5}
+          steps={PHASE_STEPS}
+        />
+
         <ScoreBoard />
         <TimerBar endTime={round.timerEnd} />
+
+        {/* Phase hint banner */}
+        {phaseHint && (
+          <motion.div
+            key={round.phase}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg"
+          >
+            <span className="text-sm">{phaseHint.icon}</span>
+            <span className="text-xs text-blue-300">{phaseHint.message}</span>
+          </motion.div>
+        )}
       </div>
 
       {/* Teach phase: Buck explains */}
@@ -77,6 +133,17 @@ export default function GameScreen() {
               <h2 className="text-2xl font-bold text-white mb-2">{round.concept.title}</h2>
               <p className="text-gray-400">{round.concept.description}</p>
             </div>
+
+            {/* Arrow hint */}
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="mt-4 text-gray-500 text-xs text-center"
+            >
+              <span className="text-lg">⬇️</span>
+              <br />
+              A continuación: Analiza las empresas
+            </motion.div>
           </motion.div>
         )}
 
@@ -139,13 +206,23 @@ export default function GameScreen() {
             key="score"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex items-center justify-center"
+            className="flex-1 flex flex-col items-center justify-center"
           >
             <OldManBuck
               message={state.buckMessage || 'Veamos cómo les fue...'}
               mood={(state.buckMood as 'neutral' | 'pleased' | 'excited' | 'disgusted') || 'neutral'}
               size="large"
             />
+            {state.roundNumber < 6 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+                className="mt-4 text-gray-500 text-xs text-center"
+              >
+                Siguiente ronda en unos segundos...
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

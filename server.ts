@@ -200,6 +200,32 @@ app.prepare().then(() => {
       });
     });
 
+    // Player voluntarily leaves game (reset)
+    socket.on('leave_game', () => {
+      const mapping = socketToPlayer.get(socket.id);
+      if (!mapping) return;
+
+      const game = games.get(mapping.gameId);
+      if (game) {
+        console.log(`[Game] Player left voluntarily from ${mapping.gameId}`);
+        // Notify other players
+        socket.to(mapping.gameId).emit('player_forfeited', {
+          playerId: mapping.playerId
+        });
+        // Remove player from game
+        delete game.players[mapping.playerId];
+        // If no players left, clean up game
+        if (Object.keys(game.players).length === 0) {
+          games.delete(mapping.gameId);
+          clearTimerForGame(mapping.gameId);
+        } else {
+          games.set(mapping.gameId, game);
+        }
+      }
+      socket.leave(mapping.gameId);
+      socketToPlayer.delete(socket.id);
+    });
+
     // Handle disconnect
     socket.on('disconnect', () => {
       const mapping = socketToPlayer.get(socket.id);

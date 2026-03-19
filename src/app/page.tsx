@@ -8,6 +8,7 @@ import LobbyScreen from '@/components/screens/LobbyScreen';
 import TutorialScreen from '@/components/screens/TutorialScreen';
 import GameScreen from '@/components/screens/GameScreen';
 import ResultsScreen from '@/components/screens/ResultsScreen';
+import FirstTimeTutorial from '@/components/ui/FirstTimeTutorial';
 
 const AVATARS = [
   { id: 'analyst', emoji: '🧐', name: 'El Analista' },
@@ -37,6 +38,9 @@ export default function Home() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-y-auto">
+      {/* First time tutorial overlay */}
+      {mounted && <FirstTimeTutorial />}
+
       {/* Money rain — absolutely positioned in the page flow */}
       {mounted && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">

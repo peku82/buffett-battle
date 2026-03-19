@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import QRCode from 'qrcode';
 import OldManBuck from '@/components/mascot/OldManBuck';
+import GameHeader from '@/components/ui/GameHeader';
 import { useGame } from '@/lib/game-context';
 
 export default function LobbyScreen() {
@@ -37,6 +38,11 @@ export default function LobbyScreen() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center p-4">
+      {/* Back to home */}
+      <div className="fixed top-3 left-3 z-40">
+        <GameHeader />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -46,12 +52,49 @@ export default function LobbyScreen() {
         <div className="text-center mb-6">
           <h2 className="text-3xl font-black text-amber-400">Sala de Espera</h2>
           <div className="mt-2 flex items-center justify-center gap-2">
-            <span className="text-gray-400 text-sm">Código:</span>
+            <span className="text-gray-400 text-sm">Codigo:</span>
             <span className="text-2xl font-mono font-bold text-white tracking-[0.3em] bg-gray-800 px-4 py-1 rounded-lg">
               {state.gameId}
             </span>
           </div>
         </div>
+
+        {/* Step-by-step instructions */}
+        {!hasOpponent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl"
+          >
+            <p className="text-blue-300 text-sm font-semibold mb-2">📋 Pasos para comenzar:</p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-500 text-amber-950 text-xs font-bold flex items-center justify-center">1</span>
+                <span className="text-gray-300 text-xs">Comparte el <strong className="text-amber-300">codigo QR</strong> o el <strong className="text-amber-300">codigo de sala</strong> con tu oponente</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center">2</span>
+                <span className="text-gray-500 text-xs">Espera a que se conecte</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center">3</span>
+                <span className="text-gray-500 text-xs">Presiona &quot;Comenzar Batalla&quot;</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {hasOpponent && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl"
+          >
+            <p className="text-emerald-300 text-sm font-semibold">
+              ✅ ¡Oponente conectado! {isHost ? 'Presiona el boton para comenzar.' : 'Esperando que el host inicie.'}
+            </p>
+          </motion.div>
+        )}
 
         {/* QR Code */}
         {!hasOpponent && (
@@ -86,7 +129,7 @@ export default function LobbyScreen() {
               <div className="flex-1">
                 <div className="font-bold text-lg">{player.name}</div>
                 <div className="text-xs text-gray-400">
-                  {player.id === state.playerId ? 'Tú' : 'Oponente'}
+                  {player.id === state.playerId ? 'Tu' : 'Oponente'}
                   {!player.connected && ' (desconectado)'}
                 </div>
               </div>
@@ -103,7 +146,7 @@ export default function LobbyScreen() {
               <span className="text-3xl">👤</span>
               <div className="flex-1">
                 <div className="font-bold text-gray-500">Esperando oponente...</div>
-                <div className="text-xs text-gray-600">Que escanee el QR o use el código</div>
+                <div className="text-xs text-gray-600">Que escanee el QR o use el codigo</div>
               </div>
               <div className="w-3 h-3 rounded-full bg-gray-600 animate-pulse" />
             </motion.div>

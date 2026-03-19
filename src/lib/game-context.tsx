@@ -90,7 +90,8 @@ type GameAction =
   | { type: 'CLEAR_ERROR' }
   | { type: 'SET_BUCK'; message: string; mood: string }
   | { type: 'PLAYER_DISCONNECTED'; playerId: string }
-  | { type: 'PLAYER_RECONNECTED'; playerId: string };
+  | { type: 'PLAYER_RECONNECTED'; playerId: string }
+  | { type: 'RESET_GAME' };
 
 const initialState: GameContextState = {
   phase: 'home',
@@ -168,6 +169,8 @@ function gameReducer(state: GameContextState, action: GameAction): GameContextSt
           p.id === action.playerId ? { ...p, connected: true } : p
         )
       };
+    case 'RESET_GAME':
+      return { ...initialState };
     default:
       return state;
   }
@@ -181,6 +184,7 @@ const GameContext = createContext<{
   startGame: () => void;
   setReady: () => void;
   submitDecision: (decision: unknown) => void;
+  resetGame: () => void;
 } | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -307,8 +311,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
     getSocket().emit('submit_decision', { decision }, () => { });
   }, []);
 
+  const resetGame = useCallback(() => {
+    // Notify server we're leaving
+    const socket = getSocket();
+    socket.emit('leave_game');
+    // Clear saved session
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('bb_session');
+      localStorage.removeItem('bb_tutorial_seen');
+    }
+    // Reset client state
+    dispatch({ type: 'RESET_GAME' });
+    // Disconnect and reconnect socket cleanly
+    socket.disconnect();
+    setTimeout(() => socket.connect(), 100);
+  }, []);
+
   return (
-    <GameContext.Provider value={{ state, dispatch, createGame, joinGame, startGame, setReady, submitDecision: submitDecisionFn }}>
+    <GameContext.Provider value={{ state, dispatch, createGame, joinGame, startGame, setReady, submitDecision: submitDecisionFn, resetGame }}>
       {children}
     </GameContext.Provider>
   );

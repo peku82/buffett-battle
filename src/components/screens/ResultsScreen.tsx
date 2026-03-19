@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import OldManBuck from '@/components/mascot/OldManBuck';
 import { useGame } from '@/lib/game-context';
+import GameHeader from '@/components/ui/GameHeader';
 
 const gradeColors: Record<string, string> = {
   'A+': 'from-yellow-400 to-amber-500',
@@ -33,7 +34,7 @@ function getGrade(score: number): string {
 }
 
 export default function ResultsScreen() {
-  const { state } = useGame();
+  const { state, resetGame } = useGame();
   const [showConfetti, setShowConfetti] = useState(true);
   const [confettiPieces, setConfettiPieces] = useState<{ id: number; left: number; delay: number; emoji: string }[]>([]);
 
@@ -61,6 +62,11 @@ export default function ResultsScreen() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Back to home */}
+      <div className="fixed top-3 left-3 z-40">
+        <GameHeader />
+      </div>
+
       {/* Confetti */}
       {showConfetti && confettiPieces.map(p => (
         <motion.div
@@ -189,13 +195,16 @@ export default function ResultsScreen() {
           className="flex gap-3 mt-6"
         >
           <button
-            onClick={() => {
-              localStorage.removeItem('bb_session');
-              window.location.reload();
-            }}
-            className="flex-1 py-4 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl font-bold text-xl text-amber-950 shadow-lg"
+            onClick={resetGame}
+            className="px-5 py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl font-semibold text-white transition-colors"
           >
-            🔄 Jugar de Nuevo
+            🏠 Inicio
+          </button>
+          <button
+            onClick={resetGame}
+            className="flex-1 py-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 rounded-2xl font-bold text-xl text-amber-950 shadow-lg transition-all active:scale-95"
+          >
+            🔄 Nuevo Juego
           </button>
         </motion.div>
 

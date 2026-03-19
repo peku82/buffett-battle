@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import OldManBuck from '@/components/mascot/OldManBuck';
+import GameHeader from '@/components/ui/GameHeader';
 import { useGame } from '@/lib/game-context';
 
 const tutorialSlides = [
@@ -56,6 +57,11 @@ export default function TutorialScreen() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center p-4">
+      {/* Back to home */}
+      <div className="fixed top-3 left-3 z-40">
+        <GameHeader />
+      </div>
+
       <div className="w-full max-w-lg">
         {/* Progress dots */}
         <div className="flex justify-center gap-2 mb-6">
