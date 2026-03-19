@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { behaviorSounds, maybePlayFart, playCelebration, playBuzzer, playGrunt } from '@/lib/sounds';
 
 type BuckMood = 'neutral' | 'pleased' | 'excited' | 'disgusted';
 
@@ -68,6 +69,15 @@ export default function OldManBuck({ message, mood = 'neutral', size = 'small', 
     img.src = MASCOT_IMAGES.neutral;
   }, []);
 
+  // Mood sound effects
+  useEffect(() => {
+    try {
+      if (mood === 'excited') playCelebration();
+      else if (mood === 'disgusted') playBuzzer();
+      else if (mood === 'pleased') { /* subtle - no sound */ }
+    } catch {}
+  }, [mood]);
+
   // Typewriter effect
   useEffect(() => {
     if (!message) return;
@@ -107,14 +117,33 @@ export default function OldManBuck({ message, mood = 'neutral', size = 'small', 
     return () => ctrl.abort();
   }, [message]);
 
-  // Random idle behaviors when not speaking
+  // Random idle behaviors when not speaking (with SOUNDS!)
   useEffect(() => {
     if (isSpeaking || isTyping) return;
     const interval = setInterval(() => {
+      // 8% chance of a random fart 💨
+      const didFart = maybePlayFart();
+      if (didFart) {
+        setCurrentBehavior('lookAround');
+        setBehaviorEmoji('💨');
+        bodyControls.start({ x: [0, -5, 5, -3, 0], y: [0, 3, 0], transition: { duration: 0.8 } });
+        setTimeout(() => {
+          setCurrentBehavior(null);
+          setBehaviorEmoji(null);
+        }, 2000);
+        return;
+      }
+
       if (Math.random() > 0.5) return; // 50% chance each tick
       const behavior = IDLE_BEHAVIORS[Math.floor(Math.random() * IDLE_BEHAVIORS.length)];
       setCurrentBehavior(behavior.type);
       setBehaviorEmoji(behavior.emoji);
+
+      // Play sound for this behavior
+      const soundFn = behaviorSounds[behavior.type];
+      if (soundFn) {
+        try { soundFn(); } catch {}
+      }
 
       // Trigger body animation based on behavior
       switch (behavior.type) {
